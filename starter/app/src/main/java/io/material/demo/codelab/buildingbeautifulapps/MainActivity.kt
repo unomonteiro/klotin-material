@@ -24,6 +24,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.TextView
 import com.android.volley.toolbox.NetworkImageView
 import com.google.gson.reflect.TypeToken
@@ -98,8 +99,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         init {
-            imageView = itemView.findViewById(R.id.image) as NetworkImageView
-            priceView = itemView.findViewById(R.id.price) as TextView
+            imageView = itemView.findViewById<ImageView>(R.id.image) as NetworkImageView
+            priceView = itemView.findViewById<TextView>(R.id.price) as TextView
             itemView.setOnClickListener(clickListener)
         }
 
