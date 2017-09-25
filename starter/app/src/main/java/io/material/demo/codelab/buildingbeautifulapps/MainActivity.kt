@@ -37,81 +37,100 @@ import java.util.*
  */
 class MainActivity : AppCompatActivity() {
 
-    private var adapter: ProductAdapter? = null
+  private var adapter: ProductAdapter? = null
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.shr_main)
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+    setContentView(R.layout.shr_main)
 
-        setSupportActionBar(app_bar)
+    setSupportActionBar(app_bar)
 
-        val products = readProductsList()
-        val imageRequester = ImageRequester.getInstance(this)
+    val products = readProductsList()
+    val imageRequester = ImageRequester.getInstance(this)
 
-        product_list.setHasFixedSize(true)
-        product_list.layoutManager = LinearLayoutManager(this)
-        adapter = ProductAdapter(products, imageRequester)
-        product_list.adapter = adapter
+    val headerProduct = getHeaderProduct(products)
+    imageRequester.setImageFromUrl(app_bar_image, headerProduct.url)
+
+    product_list.setHasFixedSize(true)
+    product_list.layoutManager = LinearLayoutManager(this)
+    adapter = ProductAdapter(products, imageRequester)
+    product_list.adapter = adapter
+  }
+
+  private fun readProductsList(): ArrayList<ProductEntry> {
+    val inputStream = resources.openRawResource(R.raw.products)
+    val productListType = object : TypeToken<ArrayList<ProductEntry>>() {
+
+    }.type
+    try {
+      return JsonReader.readJsonStream<ArrayList<ProductEntry>>(inputStream, productListType)
+    } catch (e: IOException) {
+      Log.e(TAG, "Error reading JSON product list", e)
+      return ArrayList()
     }
 
-    private fun readProductsList(): ArrayList<ProductEntry> {
-        val inputStream = resources.openRawResource(R.raw.products)
-        val productListType = object : TypeToken<ArrayList<ProductEntry>>() {
+  }
 
-        }.type
-        try {
-            return JsonReader.readJsonStream<ArrayList<ProductEntry>>(inputStream, productListType)
-        } catch (e: IOException) {
-            Log.e(TAG, "Error reading JSON product list", e)
-            return ArrayList()
-        }
-
+  private fun getHeaderProduct(products: List<ProductEntry>): ProductEntry {
+    if (products.isEmpty()) {
+      throw IllegalArgumentException("There must be at least one product")
     }
 
-    private class ProductAdapter internal constructor(private var products: List<ProductEntry>, private val imageRequester: ImageRequester) : RecyclerView.Adapter<ProductViewHolder>() {
+    for (i in products.indices) {
+      if ("Perfect Goldfish Bowl" == products[i].title) {
+        return products[i]
+      }
+    }
+    return products[0]
+  }
 
-        internal fun setProducts(products: List<ProductEntry>) {
-            this.products = products
-            notifyDataSetChanged()
-        }
+  private class ProductAdapter internal constructor(
+    private var products: List<ProductEntry>,
+    private val imageRequester: ImageRequester)
+    : RecyclerView.Adapter<ProductViewHolder>() {
 
-        override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): ProductViewHolder {
-            return ProductViewHolder(viewGroup)
-        }
-
-        override fun onBindViewHolder(viewHolder: ProductViewHolder, i: Int) {
-            viewHolder.bind(products[i], imageRequester)
-        }
-
-        override fun getItemCount(): Int {
-            return products.size
-        }
+    internal fun setProducts(products: List<ProductEntry>) {
+      this.products = products
+      notifyDataSetChanged()
     }
 
-    private class ProductViewHolder internal constructor(parent: ViewGroup) : RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(
-            R.layout.shr_product_entry, parent, false)) {
-        private val imageView: NetworkImageView
-        private val priceView: TextView
-
-        private val clickListener = View.OnClickListener { v ->
-            val product = v.getTag(R.id.tag_product_entry) as ProductEntry
-            // TODO: show product details
-        }
-
-        init {
-            imageView = itemView.findViewById<ImageView>(R.id.image) as NetworkImageView
-            priceView = itemView.findViewById<TextView>(R.id.price) as TextView
-            itemView.setOnClickListener(clickListener)
-        }
-
-        internal fun bind(product: ProductEntry, imageRequester: ImageRequester) {
-            itemView.setTag(R.id.tag_product_entry, product)
-            imageRequester.setImageFromUrl(imageView, product.url)
-            priceView.text = product.price
-        }
+    override fun onCreateViewHolder(viewGroup: ViewGroup, i: Int): ProductViewHolder {
+      return ProductViewHolder(viewGroup)
     }
 
-    companion object {
-        private val TAG = MainActivity::class.java.simpleName
+    override fun onBindViewHolder(viewHolder: ProductViewHolder, i: Int) {
+      viewHolder.bind(products[i], imageRequester)
     }
+
+    override fun getItemCount(): Int {
+      return products.size
+    }
+  }
+
+  private class ProductViewHolder internal constructor(parent: ViewGroup) : RecyclerView.ViewHolder(LayoutInflater.from(parent.context).inflate(
+    R.layout.shr_product_entry, parent, false)) {
+    private val imageView: NetworkImageView
+    private val priceView: TextView
+
+    private val clickListener = View.OnClickListener { v ->
+      val product = v.getTag(R.id.tag_product_entry) as ProductEntry
+      // TODO: show product details
+    }
+
+    init {
+      imageView = itemView.findViewById<ImageView>(R.id.image) as NetworkImageView
+      priceView = itemView.findViewById<TextView>(R.id.price) as TextView
+      itemView.setOnClickListener(clickListener)
+    }
+
+    internal fun bind(product: ProductEntry, imageRequester: ImageRequester) {
+      itemView.setTag(R.id.tag_product_entry, product)
+      imageRequester.setImageFromUrl(imageView, product.url)
+      priceView.text = product.price
+    }
+  }
+
+  companion object {
+    private val TAG = MainActivity::class.java.simpleName
+  }
 }
