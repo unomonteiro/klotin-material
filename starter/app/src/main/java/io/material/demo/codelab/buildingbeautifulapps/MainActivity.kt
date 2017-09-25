@@ -18,6 +18,7 @@ package io.material.demo.codelab.buildingbeautifulapps
 
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.LinearLayoutManager
 import android.support.v7.widget.RecyclerView
 import android.util.Log
@@ -52,9 +53,26 @@ class MainActivity : AppCompatActivity() {
     imageRequester.setImageFromUrl(app_bar_image, headerProduct.url)
 
     product_list.setHasFixedSize(true)
-    product_list.layoutManager = LinearLayoutManager(this)
+    //    product_list.layoutManager = LinearLayoutManager(this)
+    product_list.layoutManager = GridLayoutManager(this, resources.getInteger(R.integer.shr_column_count))
     adapter = ProductAdapter(products, imageRequester)
     product_list.adapter = adapter
+
+    bottom_navigation.setOnNavigationItemSelectedListener {
+      val layoutManager = product_list.layoutManager as LinearLayoutManager
+      layoutManager.scrollToPositionWithOffset(0, 0)
+      shuffleProducts()
+      true
+    }
+
+    bottom_navigation.setOnNavigationItemReselectedListener {
+      val layoutManager = product_list.layoutManager as LinearLayoutManager
+      layoutManager.scrollToPositionWithOffset(0, 0)
+    }
+
+    if (savedInstanceState == null) {
+      bottom_navigation.selectedItemId = R.id.category_home
+    }
   }
 
   private fun readProductsList(): ArrayList<ProductEntry> {
@@ -128,6 +146,12 @@ class MainActivity : AppCompatActivity() {
       imageRequester.setImageFromUrl(imageView, product.url)
       priceView.text = product.price
     }
+  }
+
+  private fun shuffleProducts() {
+    val products = readProductsList()
+    Collections.shuffle(products)
+    adapter?.setProducts(products)
   }
 
   companion object {
