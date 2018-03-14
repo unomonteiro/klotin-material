@@ -20,7 +20,7 @@ apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.1"
+    buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "io.material.demo.codelab.buildingbeautifulapps"
         minSdkVersion 15

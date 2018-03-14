@@ -136,8 +136,8 @@ class MainActivity : AppCompatActivity() {
         }
 
         init {
-            imageView = itemView.findViewById(R.id.image) as NetworkImageView
-            priceView = itemView.findViewById(R.id.price) as TextView
+            imageView = itemView.findViewById(R.id.image)
+            priceView = itemView.findViewById(R.id.price)
             itemView.setOnClickListener(clickListener)
         }
 
